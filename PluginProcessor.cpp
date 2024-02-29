@@ -45,11 +45,11 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    auto depth = *apvts.getRawParameterValue("G");
-    auto baseDelay = *apvts.getRawParameterValue("M0");
-    auto modWidth = *apvts.getRawParameterValue("MW");
-    auto lfoFreq = *apvts.getRawParameterValue("fLFO");
-    auto offsetDegrees = *apvts.getRawParameterValue("offDeg");
+    auto depth = apvts.getRawParameterValue("G")->load();
+    auto baseDelay = apvts.getRawParameterValue("M0")->load();
+    auto modWidth = apvts.getRawParameterValue("MW")->load();
+    auto lfoFreq = apvts.getRawParameterValue("fLFO")->load();
+    auto offsetDegrees = apvts.getRawParameterValue("offDeg")->load();
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
