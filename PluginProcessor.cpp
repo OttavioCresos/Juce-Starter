@@ -97,10 +97,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout PluginProcessor::createParam
     
     // Adding parameters to the layout
     layout.add(std::make_unique<juce::AudioParameterFloat>("G", "Depth", 0.0f, 1.0f, 0.7f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("M0", "Base Delay", 0.005f, 0.03f, 0.025f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("MW", "Modulation Width", 0.0005f, 0.005f, 0.003f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("fLFO", "LFO Frequency", 0.1f, 5.0f, 1.5f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("offDeg", "Offset Degrees", 0.0f, 360.0f, 145.0f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("M0", "Base Delay", 5.0f, 30.0f, 25.0f)); // ms
+    layout.add(std::make_unique<juce::AudioParameterFloat>("MW", "Modulation Width", 0.5f, 3.0f, 0.5f)); // ms
+    layout.add(std::make_unique<juce::AudioParameterFloat>("fLFO", "LFO Frequency", 0.1f, 5.0f, 1.5f)); // Hz
+    layout.add(std::make_unique<juce::AudioParameterFloat>("offDeg", "Offset Degrees", 0.0f, 360.0f, 145.0f)); 
 
     return layout;
 }

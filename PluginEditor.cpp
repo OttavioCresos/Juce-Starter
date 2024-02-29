@@ -7,7 +7,7 @@ PluginEditor::PluginEditor (PluginProcessor& p) : AudioProcessorEditor (&p)
 {
     juce::ignoreUnused (processorRef);
     
-        // Initialize each slider
+    // Initialize each slider
     depthSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     depthSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 50, 20);
     addAndMakeVisible(depthSlider);
@@ -34,10 +34,6 @@ PluginEditor::PluginEditor (PluginProcessor& p) : AudioProcessorEditor (&p)
     modulationWidthSliderAttachment.reset(new juce::AudioProcessorValueTreeState::SliderAttachment(processorRef.apvts, "MW", modulationWidthSlider));
     lfoFrequencySliderAttachment.reset(new juce::AudioProcessorValueTreeState::SliderAttachment(processorRef.apvts, "fLFO", lfoFrequencySlider));
     offsetDegreesSliderAttachment.reset(new juce::AudioProcessorValueTreeState::SliderAttachment(processorRef.apvts, "offDeg", offsetDegreesSlider));
-
-
-
-
     
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
