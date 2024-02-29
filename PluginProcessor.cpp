@@ -40,9 +40,10 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                     juce::MidiBuffer& midiMessages)
 {
     juce::ignoreUnused (midiMessages);
-
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
+
+    auto totalNumInputChannels  = 1;
+    // auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
     auto depth = apvts.getRawParameterValue("G")->load();
@@ -50,6 +51,10 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto modWidth = apvts.getRawParameterValue("MW")->load();
     auto lfoFreq = apvts.getRawParameterValue("fLFO")->load();
     auto offsetDegrees = apvts.getRawParameterValue("offDeg")->load();
+
+    auto sampleRate = getSampleRate();
+    auto baseDelaySamples = (baseDelay / 1000.0) * sampleRate;
+    auto modWidthSamples = (modWidth / 1000.0) * sampleRate;
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -69,6 +74,26 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer (channel);
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+        {
+            // calculate lfo modulation for current sample
+            auto lfoPhase = (std::sin(2.0 * juce::MathConstants<double>::pi * lfoFreq * sample / sampleRate + juce::degreesToRadians(offsetDegrees)) + 1.0) / 2.0;
+            auto modDelay = baseDelaySamples + modWidthSamples * lfoPhase;
+
+            // ensure modulated delay is within buffer size
+            int delaySamples = static_cast<int>(modDelay);
+            int readPosition = sample - delaySamples;
+
+            float delayedSample = 0.0f;
+            if (readPosition >= 0)
+            {
+                delayedSample = channelData[readPosition];
+            }
+
+            // apply delay
+            channelData[sample] = juce::jlimit(-1.0f, 1.0f, (channelData[sample] * (1 - depth)) + (delayedSample * depth));
+        }
+
         juce::ignoreUnused (channelData);
         // ..do something to the data...
     }
