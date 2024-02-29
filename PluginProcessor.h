@@ -89,7 +89,13 @@ public:
     void getStateInformation (juce::MemoryBlock&) override;
     void setStateInformation (const void*, int) override;
 
+    //==============================================================================
+    juce::AudioProcessorValueTreeState apvts; // Parameter management
+
 private:
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
+
+    // Utility function to create parameter layout
+    static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 };

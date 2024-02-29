@@ -2,18 +2,20 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-PluginProcessor::PluginProcessor() : AudioProcessor
-(
-    BusesProperties()
-    #if ! JucePlugin_IsMidiEffect
-     #if ! JucePlugin_IsSynth
-        .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-     #endif
-        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
-    #endif
-)
+PluginProcessor::PluginProcessor()
+    : AudioProcessor(BusesProperties()
+                     #if ! JucePlugin_IsMidiEffect
+                     #if ! JucePlugin_IsSynth
+                     .withInput("Input", juce::AudioChannelSet::stereo(), true)
+                     #endif
+                     .withOutput("Output", juce::AudioChannelSet::stereo(), true)
+                     #endif
+                    ),
+      apvts(*this, nullptr, "Parameters", createParameterLayout())
 {
+    // Other initialization code can go here...
 }
+
 
 PluginProcessor::~PluginProcessor()
 {
@@ -42,6 +44,12 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
+
+    auto depth = *apvts.getRawParameterValue("G");
+    auto baseDelay = *apvts.getRawParameterValue("M0");
+    auto modWidth = *apvts.getRawParameterValue("MW");
+    auto lfoFreq = *apvts.getRawParameterValue("fLFO");
+    auto offsetDegrees = *apvts.getRawParameterValue("offDeg");
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -82,7 +90,20 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
     juce::ignoreUnused (data, sizeInBytes);
 }
 
+juce::AudioProcessorValueTreeState::ParameterLayout PluginProcessor::createParameterLayout()
+{
+    // Here we will add our parameters
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+    
+    // Adding parameters to the layout
+    layout.add(std::make_unique<juce::AudioParameterFloat>("G", "Depth", 0.0f, 1.0f, 0.7f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("M0", "Base Delay", 0.005f, 0.03f, 0.025f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("MW", "Modulation Width", 0.0005f, 0.005f, 0.003f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("fLFO", "LFO Frequency", 0.1f, 5.0f, 1.5f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("offDeg", "Offset Degrees", 0.0f, 360.0f, 145.0f));
 
+    return layout;
+}
 
 //==============================================================================
 // This creates a new instance of the plugin's editor..
