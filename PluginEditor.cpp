@@ -10,7 +10,14 @@ PluginEditor::PluginEditor (PluginProcessor& p) : AudioProcessorEditor (&p)
     
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize (600, 1200);
+    setSize (400, 600);
+
+    // Add voice strips
+    for (int i = 1; i <= 8; ++i) {
+        auto strip = new VoiceStrip(processorRef.apvts, juce::String(i));
+        addAndMakeVisible(strip);
+        voiceStrips.add(strip);
+    }
 }
 
 PluginEditor::~PluginEditor() 
@@ -27,5 +34,12 @@ void PluginEditor::paint (juce::Graphics& g)
 
 void PluginEditor::resized() 
 {
+
+    auto area = getLocalBounds();  // Get the total area of the plugin editor
+    auto stripHeight = area.getHeight() / voiceStrips.size();  // Divide the area equally for each strip
+
+    for (auto* strip : voiceStrips) {
+        strip->setBounds(area.removeFromTop(stripHeight));  // Set the bounds for each strip and remove that area
+    }
 
 }

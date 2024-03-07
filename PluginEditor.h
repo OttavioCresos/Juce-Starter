@@ -1,5 +1,7 @@
 #pragma once
 #include "PluginProcessor.h"
+#include "VoiceStrip.h"
+
 
 //==============================================================================
 class PluginEditor  : public juce::AudioProcessorEditor
@@ -16,6 +18,8 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     PluginProcessor& processorRef;
+    juce::OwnedArray<VoiceStrip> voiceStrips; // This declares the voiceStrips array
+
 
 
     //==============================================================================
