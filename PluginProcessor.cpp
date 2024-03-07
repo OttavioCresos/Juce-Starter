@@ -42,19 +42,9 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ignoreUnused (midiMessages);
     juce::ScopedNoDenormals noDenormals;
 
-    auto totalNumInputChannels  = 1;
-    // auto totalNumInputChannels  = getTotalNumInputChannels();
+    // auto totalNumInputChannels  = 1;
+    auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
-
-    auto depth = apvts.getRawParameterValue("G")->load();
-    auto baseDelay = apvts.getRawParameterValue("M0")->load();
-    auto modWidth = apvts.getRawParameterValue("MW")->load();
-    auto lfoFreq = apvts.getRawParameterValue("fLFO")->load();
-    auto offsetDegrees = apvts.getRawParameterValue("offDeg")->load();
-
-    auto sampleRate = getSampleRate();
-    auto baseDelaySamples = (baseDelay / 1000.0) * sampleRate;
-    auto modWidthSamples = (modWidth / 1000.0) * sampleRate;
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -73,29 +63,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // interleaved by keeping the same state.
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        auto* channelData = buffer.getWritePointer (channel);
-        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
-        {
-            // calculate lfo modulation for current sample
-            auto lfoPhase = (std::sin(2.0 * juce::MathConstants<double>::pi * lfoFreq * sample / sampleRate + juce::degreesToRadians(offsetDegrees)) + 1.0) / 2.0;
-            auto modDelay = baseDelaySamples + modWidthSamples * lfoPhase;
-
-            // ensure modulated delay is within buffer size
-            int delaySamples = static_cast<int>(modDelay);
-            int readPosition = sample - delaySamples;
-
-            float delayedSample = 0.0f;
-            if (readPosition >= 0)
-            {
-                delayedSample = channelData[readPosition];
-            }
-
-            // apply delay
-            channelData[sample] = juce::jlimit(-1.0f, 1.0f, (channelData[sample] * (1 - depth)) + (delayedSample * depth));
-        }
-
-        juce::ignoreUnused (channelData);
-        // ..do something to the data...
+        
     }
 }
 
@@ -117,16 +85,21 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
 
 juce::AudioProcessorValueTreeState::ParameterLayout PluginProcessor::createParameterLayout()
 {
-    // Here we will add our parameters
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
-    
-    // Adding parameters to the layout
-    layout.add(std::make_unique<juce::AudioParameterFloat>("G", "Depth", 0.0f, 1.0f, 0.7f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("M0", "Base Delay", 5.0f, 30.0f, 25.0f)); // ms
-    layout.add(std::make_unique<juce::AudioParameterFloat>("MW", "Modulation Width", 0.5f, 3.0f, 0.5f)); // ms
-    layout.add(std::make_unique<juce::AudioParameterFloat>("fLFO", "LFO Frequency", 0.1f, 5.0f, 1.5f)); // Hz
-    layout.add(std::make_unique<juce::AudioParameterFloat>("offDeg", "Offset Degrees", 0.0f, 360.0f, 145.0f)); 
 
+    // Assuming each voice has a unique ID from 1 to 8
+    for (int i = 1; i <= 8; ++i) {
+        juce::String id = juce::String(i);
+
+        // Add parameters for each voice
+        layout.add(std::make_unique<juce::AudioParameterFloat>("speed" + id, "Speed" + id, 0.1f, 5.0f, 1.5f)); // Hz
+        layout.add(std::make_unique<juce::AudioParameterFloat>("time" + id, "Time" + id, 5.0f, 30.0f, 25.0f)); // ms
+        layout.add(std::make_unique<juce::AudioParameterFloat>("width" + id, "Width" + id, 0.5f, 3.0f, 0.5f)); // ms
+        layout.add(std::make_unique<juce::AudioParameterFloat>("pan" + id, "Pan" + id, 0.0f, 1.0f, 0.5f));
+        layout.add(std::make_unique<juce::AudioParameterFloat>("vol" + id, "Vol" + id, 0.0f, 1.0f, 0.75f));
+        layout.add(std::make_unique<juce::AudioParameterBool>("power" + id, "Power" + id, false));
+    }
+    
     return layout;
 }
 
